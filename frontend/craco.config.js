@@ -23,9 +23,11 @@ module.exports = {
         http: false,
         https: false,
         os: false,
-        url: false,
-        fs: false,
         path: false,
+        fs: false,
+        net: false,
+        tls: false,
+        child_process: false,
         zlib: false,
       };
 
@@ -49,10 +51,9 @@ module.exports = {
 
       // Add a rule to handle .mjs files
       webpackConfig.module.rules.push({
-        test: /\.m?js$/,
-        resolve: {
-          fullySpecified: false,
-        },
+        test: /\.mjs$/,
+        include: /node_modules/,
+        type: 'javascript/auto',
       });
 
       // Add plugins
@@ -69,6 +70,28 @@ module.exports = {
           'process.env': JSON.stringify(process.env),
         })
       );
+
+      // Configure source map loader to suppress warnings
+      const sourceMapLoaderRule = webpackConfig.module.rules.find(
+        rule => rule.loader && rule.loader.includes('source-map-loader')
+      );
+      
+      if (sourceMapLoaderRule) {
+        sourceMapLoaderRule.options = {
+          ...sourceMapLoaderRule.options,
+          filterSourceMappingUrl: (url, resourcePath) => {
+            // Suppress warnings for Solana and related packages
+            if (resourcePath.includes('@solana') || 
+                resourcePath.includes('@reown') ||
+                resourcePath.includes('superstruct') ||
+                resourcePath.includes('bs58') ||
+                resourcePath.includes('tweetnacl')) {
+              return false;
+            }
+            return true;
+          }
+        };
+      }
 
       return webpackConfig;
     },
