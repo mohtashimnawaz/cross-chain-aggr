@@ -27,8 +27,8 @@ const SceneContent: React.FC<CrossChainSceneProps> = ({
 
   // Chain configurations
   const chains = [
-    { name: 'Solana', position: [10, 0, 0], color: '#9945FF', icon: '◎' },
-    { name: 'Ethereum', position: [-10, 0, 0], color: '#627EEA', icon: 'Ξ' },
+    { name: 'Solana', position: [10, 0, 0], color: '#14F195', icon: '◎' },
+    { name: 'Ethereum', position: [-10, 0, 0], color: '#FFD600', icon: 'Ξ' },
     { name: 'Polygon', position: [0, 10, 0], color: '#8247E5', icon: '◈' },
     { name: 'Avalanche', position: [0, -10, 0], color: '#E84142', icon: '❄' },
     { name: 'Arbitrum', position: [7, 7, 0], color: '#28A0F0', icon: '⟁' },

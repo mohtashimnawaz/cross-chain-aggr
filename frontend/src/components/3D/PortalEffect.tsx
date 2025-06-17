@@ -25,7 +25,7 @@ const PortalEffect: React.FC<PortalEffectProps> = ({
     return new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
-        active: { value: active ? 1.0 : 0.0 },
+        isActive: { value: active ? 1.0 : 0.0 },
         color: { value: new THREE.Color(color) },
         speed: { value: speed }
       },
@@ -41,7 +41,7 @@ const PortalEffect: React.FC<PortalEffectProps> = ({
       `,
       fragmentShader: `
         uniform float time;
-        uniform float active;
+        uniform float isActive;
         uniform vec3 color;
         uniform float speed;
         
@@ -63,7 +63,7 @@ const PortalEffect: React.FC<PortalEffectProps> = ({
           float pulse = sin(time * speed) * 0.3 + 0.7;
           
           // Combine effects
-          float intensity = swirl * waves * pulse * active;
+          float intensity = swirl * waves * pulse * isActive;
           
           // Create edge glow
           float edge = 1.0 - smoothstep(0.3, 0.5, dist);
@@ -76,7 +76,7 @@ const PortalEffect: React.FC<PortalEffectProps> = ({
           intensity *= variation;
           
           // Fade out at center when active
-          if (active > 0.5) {
+          if (isActive > 0.5) {
             float centerFade = smoothstep(0.0, 0.3, dist);
             intensity *= centerFade;
           }
@@ -104,7 +104,7 @@ const PortalEffect: React.FC<PortalEffectProps> = ({
     
     if (portalMaterial.uniforms) {
       portalMaterial.uniforms.time.value = state.clock.elapsedTime;
-      portalMaterial.uniforms.active.value = active ? 1.0 : 0.0;
+      portalMaterial.uniforms.isActive.value = active ? 1.0 : 0.0;
     }
   });
 
