@@ -3,7 +3,7 @@ import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { ConnectionProvider, WalletProvider as SolanaWalletProvider } from '@solana/wallet-adapter-react';
 import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { clusterApiUrl } from '@solana/web3.js';
-import Dashboard from './components/Dashboard';
+import Dashboard3D from './components/Dashboard3D';
 import { WalletProvider } from './contexts/WalletContext';
 
 function App() {
@@ -21,7 +21,7 @@ function App() {
     <ConnectionProvider endpoint={endpoint}>
       <SolanaWalletProvider wallets={wallets} autoConnect>
         <WalletProvider>
-          <Dashboard />
+          <Dashboard3D />
         </WalletProvider>
       </SolanaWalletProvider>
     </ConnectionProvider>

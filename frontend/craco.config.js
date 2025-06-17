@@ -18,6 +18,7 @@ module.exports = {
         stream: require.resolve('stream-browserify'),
         buffer: require.resolve('buffer'),
         process: require.resolve('process/browser'),
+        vm: require.resolve('vm-browserify'),
         util: false,
         assert: false,
         http: false,
@@ -29,6 +30,27 @@ module.exports = {
         tls: false,
         child_process: false,
         zlib: false,
+        querystring: false,
+        url: false,
+        punycode: false,
+        readline: false,
+        repl: false,
+        tty: false,
+        string_decoder: false,
+        timers: false,
+        events: false,
+        domain: false,
+        constants: false,
+        module: false,
+        inspector: false,
+        cluster: false,
+        worker_threads: false,
+        perf_hooks: false,
+        async_hooks: false,
+        v8: false,
+        trace_events: false,
+        wasi: false,
+        diagnostics_channel: false,
       };
 
       // Add module resolution rules
@@ -92,6 +114,32 @@ module.exports = {
           }
         };
       }
+
+      // Configure source map loader to suppress warnings from specific packages
+      webpackConfig.module.rules.push({
+        test: /\.js$/,
+        enforce: 'pre',
+        use: ['source-map-loader'],
+        exclude: [
+          /node_modules\/@solana/,
+          /node_modules\/@reown/,
+          /node_modules\/superstruct/,
+          /node_modules\/bs58/,
+          /node_modules\/tweetnacl/,
+          /node_modules\/@trezor/,
+          /node_modules\/@walletconnect/,
+          /node_modules\/eth-rpc-errors/,
+          /node_modules\/jsbi/,
+          /node_modules\/@fractalwagmi/,
+          /node_modules\/asn1\.js/,
+        ],
+      });
+
+      // Suppress source map warnings
+      webpackConfig.ignoreWarnings = [
+        /Failed to parse source map/,
+        /Module not found: Can't resolve/,
+      ];
 
       return webpackConfig;
     },
