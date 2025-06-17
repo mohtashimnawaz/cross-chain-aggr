@@ -27,12 +27,12 @@ const SceneContent: React.FC<CrossChainSceneProps> = ({
 
   // Chain configurations
   const chains = [
-    { name: 'Solana', position: [8, 0, 0], color: '#9945FF', icon: '◎' },
-    { name: 'Ethereum', position: [-8, 0, 0], color: '#627EEA', icon: 'Ξ' },
-    { name: 'Polygon', position: [0, 8, 0], color: '#8247E5', icon: '◈' },
-    { name: 'Avalanche', position: [0, -8, 0], color: '#E84142', icon: '❄' },
-    { name: 'Arbitrum', position: [5.7, 5.7, 0], color: '#28A0F0', icon: '⟁' },
-    { name: 'Optimism', position: [-5.7, 5.7, 0], color: '#FF0420', icon: '⚡' }
+    { name: 'Solana', position: [10, 0, 0], color: '#9945FF', icon: '◎' },
+    { name: 'Ethereum', position: [-10, 0, 0], color: '#627EEA', icon: 'Ξ' },
+    { name: 'Polygon', position: [0, 10, 0], color: '#8247E5', icon: '◈' },
+    { name: 'Avalanche', position: [0, -10, 0], color: '#E84142', icon: '❄' },
+    { name: 'Arbitrum', position: [7, 7, 0], color: '#28A0F0', icon: '⟁' },
+    { name: 'Optimism', position: [-7, 7, 0], color: '#FF0420', icon: '⚡' }
   ];
 
   const handleChainClick = (chainName: string) => {
@@ -91,7 +91,7 @@ const SceneContent: React.FC<CrossChainSceneProps> = ({
       
       {/* Holographic displays showing data */}
       <HolographicDisplay
-        position={[-15, 10, 0]}
+        position={[-12, 7, 3]}
         title="Global Stats"
         data={[
           { label: "Total TVL", value: `$${(globalData?.totalTvl || 0).toLocaleString()}`, color: "#14F195" },
@@ -99,11 +99,11 @@ const SceneContent: React.FC<CrossChainSceneProps> = ({
           { label: "APY", value: `${(globalData?.averageApy || 0).toFixed(2)}%`, color: "#FF6B6B" },
           { label: "Chains", value: chains.length.toString(), color: "#4ECDC4" }
         ]}
-        size={0.8}
+        size={2}
       />
       
       <HolographicDisplay
-        position={[15, 10, 0]}
+        position={[12, 7, 3]}
         title="Your Portfolio"
         data={[
           { label: "Total Value", value: `$${(userData?.totalValue || 0).toLocaleString()}`, color: "#14F195" },
@@ -111,7 +111,7 @@ const SceneContent: React.FC<CrossChainSceneProps> = ({
           { label: "Earnings", value: `$${(userData?.totalEarnings || 0).toLocaleString()}`, color: "#FF6B6B" },
           { label: "Active Chains", value: (userData?.activeChains || 0).toString(), color: "#4ECDC4" }
         ]}
-        size={0.8}
+        size={2}
       />
       
       {/* Additional portal effects for each chain */}

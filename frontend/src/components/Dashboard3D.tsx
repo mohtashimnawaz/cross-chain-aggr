@@ -527,11 +527,31 @@ const Dashboard3D: React.FC = () => {
               className="space-y-6"
             >
               {/* 3D Scene */}
-              <CrossChainScene
-                balances={crossChainBalances}
-                onChainSelect={setSelectedChain}
-                selectedChain={selectedChain}
-              />
+              <div className="col-span-2 h-96 bg-gradient-to-br from-gray-900 to-black rounded-lg overflow-hidden">
+                <CrossChainScene
+                  globalData={globalState}
+                  userData={userState}
+                  crossChainData={crossChainBalances.reduce((acc, balance) => {
+                    acc[balance.chainName] = {
+                      apy: balance.apy,
+                      balance: balance.balance.toString()
+                    };
+                    return acc;
+                  }, {} as any)}
+                  onChainSelect={(chain) => {
+                    const chainId = crossChainBalances.find(b => b.chainName === chain)?.chainId;
+                    if (chainId !== undefined) {
+                      setSelectedChain(chainId);
+                      addProcessStep({
+                        id: 'selected-chain',
+                        title: 'Selected Chain',
+                        status: 'success',
+                        message: `Selected chain: ${chain}`
+                      });
+                    }
+                  }}
+                />
+              </div>
 
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

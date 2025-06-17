@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -26,12 +26,10 @@ const FloatingParticles: React.FC<FloatingParticlesProps> = ({
     const colors_array = new Float32Array(count * 3);
     
     for (let i = 0; i < count; i++) {
-      // Random position within spread
       positions[i * 3] = (Math.random() - 0.5) * spread;
       positions[i * 3 + 1] = (Math.random() - 0.5) * spread;
       positions[i * 3 + 2] = (Math.random() - 0.5) * spread;
       
-      // Random color from palette
       const color = new THREE.Color(colors[Math.floor(Math.random() * colors.length)]);
       colors_array[i * 3] = color.r;
       colors_array[i * 3 + 1] = color.g;
@@ -41,6 +39,17 @@ const FloatingParticles: React.FC<FloatingParticlesProps> = ({
     return { positions, colors: colors_array };
   }, [count, colors, spread]);
 
+  // Attach color attribute to geometry
+  useEffect(() => {
+    if (meshRef.current) {
+      const geometry = meshRef.current.geometry as THREE.InstancedBufferGeometry;
+      geometry.setAttribute(
+        'color',
+        new THREE.InstancedBufferAttribute(particles.colors, 3)
+      );
+    }
+  }, [particles.colors]);
+
   useFrame((state) => {
     if (meshRef.current) {
       const time = state.clock.elapsedTime * speed;
@@ -48,28 +57,21 @@ const FloatingParticles: React.FC<FloatingParticlesProps> = ({
       for (let i = 0; i < count; i++) {
         const id = i;
         
-        // Animate each particle
         dummy.position.set(
           particles.positions[i * 3] + Math.sin(time + i) * 2,
           particles.positions[i * 3 + 1] + Math.cos(time + i * 0.5) * 2,
           particles.positions[i * 3 + 2] + Math.sin(time + i * 0.3) * 2
         );
-        
-        // Rotate particles
         dummy.rotation.set(
           Math.sin(time + i) * 0.5,
           Math.cos(time + i) * 0.5,
           Math.sin(time + i * 0.7) * 0.5
         );
-        
-        // Scale based on time
         const scale = 1 + Math.sin(time + i) * 0.3;
         dummy.scale.setScalar(scale * size);
-        
         dummy.updateMatrix();
         meshRef.current.setMatrixAt(id, dummy.matrix);
       }
-      
       meshRef.current.instanceMatrix.needsUpdate = true;
     }
   });
@@ -77,33 +79,7 @@ const FloatingParticles: React.FC<FloatingParticlesProps> = ({
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
       <sphereGeometry args={[1, 8, 8]} />
-      <meshBasicMaterial
-        transparent
-        opacity={0.6}
-        vertexColors
-        onBeforeCompile={(shader) => {
-          shader.vertexShader = shader.vertexShader.replace(
-            '#include <common>',
-            `#include <common>
-            attribute vec3 color;
-            varying vec3 vColor;`
-          );
-          shader.vertexShader = shader.vertexShader.replace(
-            '#include <begin_vertex>',
-            `#include <begin_vertex>
-            vColor = color;`
-          );
-          shader.fragmentShader = shader.fragmentShader.replace(
-            'varying vec3 vViewPosition;',
-            `varying vec3 vViewPosition;
-            varying vec3 vColor;`
-          );
-          shader.fragmentShader = shader.fragmentShader.replace(
-            'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
-            'gl_FragColor = vec4( vColor * outgoingLight, diffuseColor.a );'
-          );
-        }}
-      />
+      <meshBasicMaterial transparent opacity={0.6} vertexColors />
     </instancedMesh>
   );
 };

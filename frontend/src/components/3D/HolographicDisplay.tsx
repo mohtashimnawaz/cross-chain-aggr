@@ -103,7 +103,6 @@ const HolographicDisplay: React.FC<HolographicDisplayProps> = ({
         color="#00ffff"
         anchorX="center"
         anchorY="middle"
-        font="/fonts/Orbitron-Bold.ttf"
       >
         {title}
       </Text>

@@ -1,6 +1,6 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Sphere, MeshDistortMaterial } from '@react-three/drei';
+import { Sphere, MeshDistortMaterial, Text, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface ChainOrbProps {
@@ -15,12 +15,21 @@ interface ChainOrbProps {
   onClick?: () => void;
 }
 
+const CHAIN_ICONS: Record<string, string> = {
+  Solana: '◎',
+  Ethereum: 'Ξ',
+  Polygon: '◈',
+  Avalanche: '❄',
+  Arbitrum: '⟁',
+  Optimism: '⚡',
+};
+
 const ChainOrb: React.FC<ChainOrbProps> = ({
   position,
   color,
-  size = 1,
-  speed = 1,
-  distortion = 0.4,
+  size = 1.2,
+  speed = 1.5,
+  distortion = 0.5,
   chainName,
   apy,
   balance,
@@ -28,85 +37,99 @@ const ChainOrb: React.FC<ChainOrbProps> = ({
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const groupRef = useRef<THREE.Group>(null);
+  const ringRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
+  const [active, setActive] = useState(false);
 
-  // Create gradient texture
-  const gradientTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d')!;
-    
-    const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-    gradient.addColorStop(0, color);
-    gradient.addColorStop(0.7, color + '80');
-    gradient.addColorStop(1, color + '20');
-    
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 256, 256);
-    
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    return texture;
-  }, [color]);
-
-  // Animation loop
   useFrame((state) => {
     if (meshRef.current && groupRef.current) {
-      // Rotate the orb
       meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * speed) * 0.1;
       meshRef.current.rotation.y += 0.01 * speed;
-      
-      // Float animation
       groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
-      
-      // Pulse effect based on APY
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.05 * (apy / 10);
+      let scale = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.05 * (apy / 10);
+      if (hovered) scale *= 1.18;
+      if (active) scale *= 1.08;
       groupRef.current.scale.setScalar(scale);
+    }
+    if (ringRef.current) {
+      ringRef.current.rotation.z = state.clock.elapsedTime * 0.7;
+      const mat = ringRef.current.material;
+      if (mat && 'opacity' in mat) {
+        (mat as THREE.MeshBasicMaterial).opacity = 0.4 + 0.2 * Math.sin(state.clock.elapsedTime * 2) + (hovered ? 0.3 : 0);
+      }
     }
   });
 
   return (
     <group ref={groupRef} position={position}>
-      <mesh ref={meshRef} onClick={onClick}>
-        <Sphere args={[size, 32, 32]}>
-          <MeshDistortMaterial
-            map={gradientTexture}
-            distort={distortion}
-            speed={2}
-            transparent
-            opacity={0.8}
-            roughness={0.1}
-            metalness={0.8}
-          />
-        </Sphere>
-      </mesh>
-      
-      {/* Glow effect */}
-      <Sphere args={[size * 1.2, 16, 16]}>
-        <meshBasicMaterial
+      {/* Sparkles effect */}
+      <Sparkles count={30} scale={[size * 2, size * 2, size * 2]} color={color} speed={0.7} opacity={0.7} />
+      {/* Main orb with animated distortion */}
+      <Sphere
+        args={[size, 32, 32]}
+        onClick={() => { setActive(true); onClick?.(); setTimeout(() => setActive(false), 200); }}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+        ref={meshRef}
+      >
+        <MeshDistortMaterial
           color={color}
+          attach="material"
+          distort={distortion}
+          speed={2}
+          roughness={0.15}
+          metalness={0.7}
+          emissive={color}
+          emissiveIntensity={hovered ? 0.7 : 0.3}
           transparent
-          opacity={0.1}
+          opacity={0.95}
         />
       </Sphere>
-      
-      {/* Particle ring */}
-      <group>
-        {Array.from({ length: 12 }).map((_, i) => (
-          <mesh
-            key={i}
-            position={[
-              Math.cos((i / 12) * Math.PI * 2) * size * 1.5,
-              Math.sin((i / 12) * Math.PI * 2) * size * 1.5,
-              0
-            ]}
-          >
-            <sphereGeometry args={[0.02, 8, 8]} />
-            <meshBasicMaterial color={color} transparent opacity={0.6} />
-          </mesh>
-        ))}
-      </group>
+      {/* Animated glowing ring */}
+      <mesh ref={ringRef} position={[0, 0, 0]}>
+        <torusGeometry args={[size * 1.15, 0.07, 16, 64]} />
+        <meshBasicMaterial color={color} transparent opacity={0.5} />
+      </mesh>
+      {/* Glow effect */}
+      <Sphere args={[size * 1.3, 16, 16]}>
+        <meshBasicMaterial color={color} transparent opacity={0.12} />
+      </Sphere>
+      {/* Chain icon above orb */}
+      <Text
+        position={[0, size * 2.1, 0]}
+        fontSize={0.38}
+        color={color}
+        anchorX="center"
+        anchorY="bottom"
+        outlineColor="#000"
+        outlineWidth={0.02}
+      >
+        {CHAIN_ICONS[chainName] || '◎'}
+      </Text>
+      {/* Chain name label above orb */}
+      <Text
+        position={[0, size * 1.5, 0]}
+        fontSize={0.32}
+        color={color}
+        anchorX="center"
+        anchorY="bottom"
+        outlineColor="#000"
+        outlineWidth={0.02}
+      >
+        {chainName}
+      </Text>
+      {/* APY label below orb */}
+      <Text
+        position={[0, -size * 1.2, 0]}
+        fontSize={0.22}
+        color="#fff"
+        anchorX="center"
+        anchorY="top"
+        outlineColor={color}
+        outlineWidth={0.01}
+      >
+        {apy ? `${apy.toFixed(2)}% APY` : ''}
+      </Text>
     </group>
   );
 };
